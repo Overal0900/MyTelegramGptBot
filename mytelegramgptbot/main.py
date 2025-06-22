@@ -11,6 +11,9 @@ from handlers.basic import start, menu_callback
 from handlers.gpt import chat_with_gpt
 from handlers import register_all_handlers
 
+# 👇 Импорт для Войтенко
+from handlers.talk import handle_igor_message
+
 load_dotenv()
 TOKEN = os.getenv("MYTG_BOT_TOKEN")
 
@@ -19,7 +22,9 @@ logger = logging.getLogger(__name__)
 
 
 async def unknown_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if context.user_data.get("awaiting_gpt"):
+    if context.user_data.get("awaiting_igor"):
+        await handle_igor_message(update, context)
+    elif context.user_data.get("awaiting_gpt"):
         await chat_with_gpt(update, context)
         context.user_data["awaiting_gpt"] = False
     else:
@@ -47,6 +52,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
