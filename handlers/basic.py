@@ -1,13 +1,20 @@
 import logging
 import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes
+from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)  # Уровень логирования можно менять
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработка команды /start."""
+    logger.debug("Команда /start вызвана пользователем: %s", update.effective_user.id)
+
     keyboard = [
         [InlineKeyboardButton("🎲 Рандомный факт", callback_data="random_fact")],
         [InlineKeyboardButton("🧠 ChatGPT", callback_data="gpt_interface")],
@@ -35,12 +42,17 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Обработка нажатий на inline-кнопки."""
     query = update.callback_query
     await query.answer()
+    user_id = update.effective_user.id
+    logger.debug("Нажата кнопка: %s пользователем: %s", query.data, user_id)
 
     if query.data == "random_fact":
         from handlers.random_fact import send_random_fact
         await send_random_fact(query, context)
+        await asyncio.sleep(2)
+        await return_to_main_menu(query)
 
     elif query.data == "gpt_interface":
+        logger.debug("Переход в режим GPT ввода")
         await query.edit_message_text(
             "🧠 Введите ваш вопрос для ChatGPT прямо в чат. Я отвечу!",
             parse_mode='HTML'
@@ -50,26 +62,33 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "talk_igor":
         from handlers.talk import start_talk_with_igor
         await start_talk_with_igor(query, context)
+        await asyncio.sleep(2)
+        await return_to_main_menu(query)
 
     elif query.data == "quiz":
         from handlers.quiz import start_quiz
         await start_quiz(query, context)
+        # Не возвращаемся в главное меню сразу — ждём окончания квиза
+
+    elif query.data.startswith("quiz_answer:"):
+        from handlers.quiz import handle_quiz_answer
+        await handle_quiz_answer(update, context)
 
     elif query.data == "training_plan":
         from handlers.training import send_training_plan
         await send_training_plan(query, context)
+        await asyncio.sleep(2)
+        await return_to_main_menu(query)
 
     else:
+        logger.warning("Неизвестная callback_data: %s", query.data)
         await query.edit_message_text("⚠️ Неизвестная команда.")
-        return
-
-    # Вернуть главное меню через 3 секунды
-    await asyncio.sleep(3)
-    await return_to_main_menu(query)
 
 
 async def return_to_main_menu(query):
     """Возврат к главному меню."""
+    logger.debug("Возврат к главному меню для пользователя: %s", query.from_user.id)
+
     keyboard = [
         [InlineKeyboardButton("🎲 Рандомный факт", callback_data="random_fact")],
         [InlineKeyboardButton("🧠 ChatGPT", callback_data="gpt_interface")],
@@ -84,4 +103,18 @@ async def return_to_main_menu(query):
         parse_mode="HTML",
         reply_markup=reply_markup
     )
+
+
+def register_basic_handlers(dispatcher):
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CallbackQueryHandler(menu_callback))
+
+
+
+
+
+
+
+
+
 

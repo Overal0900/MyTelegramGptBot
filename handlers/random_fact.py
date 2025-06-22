@@ -10,3 +10,8 @@ facts = [
 async def send_random_fact(query, context):
     fact = random.choice(facts)
     await query.edit_message_text(f"🎲 Случайный факт:\n\n{fact}")
+
+
+def register_random_fact_handlers(app):
+    pass  # вызывается напрямую из basic
+

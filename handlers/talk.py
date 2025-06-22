@@ -5,3 +5,7 @@ async def start_talk_with_igor(query, context):
         parse_mode="HTML"
     )
     context.user_data["talking_to_igor"] = True
+
+
+def register_talk_handlers(app):
+    pass  # всё вызывается из basic

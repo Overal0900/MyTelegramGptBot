@@ -9,3 +9,7 @@ training_plans = [
 async def send_training_plan(query, context):
     plan = random.choice(training_plans)
     await query.edit_message_text(f"🏋️ Твоя тренировка на сегодня:\n\n{plan}")
+
+
+def register_workout_handlers(app):
+    pass  # всё вызывается из basic
