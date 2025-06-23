@@ -1,10 +1,11 @@
 import logging
 import asyncio
+from pathlib import Path
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)  # Уровень логирования можно менять
+logger.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
@@ -25,7 +26,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     welcome_text = (
-        "<b>Добро пожаловать в ChatGPT бота!</b>\n\n"
+        "<b>Добро пожаловать в GYM бота!</b>\n\n"
         "⚙️ Доступные функции:\n"
         "🎲 Рандомный факт — получи интересный факт\n"
         "🧠 ChatGPT — общение с ИИ\n"
@@ -35,7 +36,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Выберите функцию из меню ниже!"
     )
 
-    await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="HTML")
+    try:
+        image_path = Path(__file__).parent.parent / "Images" / "menu.jpg"
+        with open(image_path, "rb") as photo:
+            await context.bot.send_photo(
+                chat_id=update.effective_chat.id,
+                photo=photo,
+                caption=welcome_text,
+                parse_mode="HTML",
+                reply_markup=reply_markup
+            )
+    except FileNotFoundError:
+        logger.warning("menu.jpg не найден. Отправка только текста.")
+        await update.message.reply_text(welcome_text, reply_markup=reply_markup, parse_mode="HTML")
 
 
 async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -68,7 +81,6 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "quiz":
         from handlers.quiz import start_quiz
         await start_quiz(query, context)
-        # Не возвращаемся в главное меню сразу — ждём окончания квиза
 
     elif query.data.startswith("quiz_answer:"):
         from handlers.quiz import handle_quiz_answer
@@ -108,6 +120,8 @@ async def return_to_main_menu(query):
 def register_basic_handlers(dispatcher):
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CallbackQueryHandler(menu_callback))
+
+
 
 
 
