@@ -66,11 +66,13 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif query.data == "gpt_interface":
         logger.debug("Переход в режим GPT ввода")
-        await query.edit_message_text(
-            "🧠 Введите ваш вопрос для ChatGPT прямо в чат. Я отвечу!",
+        context.user_data["awaiting_gpt"] = True  # <- Эта строка добавлена
+        await query.answer()
+        await context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text="🧠 Введите ваш вопрос для ChatGPT прямо в чат. Я отвечу!",
             parse_mode='HTML'
         )
-        context.user_data['awaiting_gpt'] = True
 
     elif query.data == "talk_igor":
         from handlers.talk import start_talk_with_igor
@@ -120,6 +122,8 @@ async def return_to_main_menu(query):
 def register_basic_handlers(dispatcher):
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CallbackQueryHandler(menu_callback))
+
+
 
 
 

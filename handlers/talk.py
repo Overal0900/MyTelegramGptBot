@@ -54,3 +54,5 @@ def register_talk_handlers(app: Application):
     app.add_handler(CommandHandler("startigor", start_talk_with_igor))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_igor_message))
 
+
+
