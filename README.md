@@ -6,7 +6,9 @@ bash
 Редактировать
 git clone https://github.com/your-username/your-repo-name.git
 cd your-repo-name
-▶️ Как запустить бота:
+
+
+ ▶️ Как запустить бота:
 Установите зависимости:
 
 bash
@@ -19,13 +21,16 @@ telegram-token.txt — токен вашего Telegram-бота.
 
 openai-token.txt — токен OpenAI GPT.
 
+
 Запустите бота:
 
 bash
 Копировать
 Редактировать
 python main.py
-🤖 Что умеет бот:
+
+
+ 🤖 Что умеет бот:
 /gpt — чат с GPT (на основе OpenAI).
 
 /random — случайный факт.
